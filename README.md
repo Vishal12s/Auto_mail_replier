@@ -22,9 +22,28 @@ Before using this script, ensure you have the following:
    - Go to your account settings and generate an API key.
    - Copy the API key and save it. 
 
-4. **Environment Variables**: Set up environment variables for Gmail API credentials and OpenAI API key. Create a `.env` file in the project directory with the following content:
+Installation
+Clone the repository to your local machine:
 
-   ```plaintext
-   GOOGLE_CLIENT_ID=your_google_client_id
-   GOOGLE_CLIENT_SECRET=your_google_client_secret
-   OPENAI_API_KEY=your_openai_api_key
+bash
+Copy code
+git clone https://github.com/your_username/your_repository.git
+Navigate to the project directory:
+
+bash
+Copy code
+cd Gmail-auto-replies-using-OpenAI
+Install dependencies:
+
+bash
+Copy code
+npm install
+Usage
+Run the script:
+
+bash
+Copy code
+node script.js
+Follow the authorization steps prompted in the terminal to authorize the script to access your Gmail account.
+
+The script will read your unread emails, generate automatic replies using OpenAI, and send the replies to the respective emails.
