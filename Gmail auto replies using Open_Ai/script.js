@@ -5,13 +5,11 @@ const OpenAI = require('openai');
 require('dotenv').config();
 
 
-
-// Load OpenAI API key from environment variables or directly specify it here
 const openaiApiKey = process.env.OPENAI_API_KEY || ;
 
-// Initialize the OpenAI client
+
 const openai = new OpenAI(openaiApiKey);
-// If modifying these SCOPES, delete token.json.
+
 const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.send'];
 const TOKEN_PATH = 'token.json';
 
@@ -85,38 +83,37 @@ async function sendMessage(auth, raw) {
   return res.data;
 }
 
-function createAutoReply(to, subject, body) {
+function createAutoReply(to, subject, body, messageId) {
   const raw = [
     `To: ${to}`,
-    'Subject: Re: ' + subject,
+    `Subject: Re: ${subject}`,
+    `References: ${messageId}`,
+    `In-Reply-To: ${messageId}`,
     '',
     body
   ].join('\n');
   return Buffer.from(raw).toString('base64');
 }
 
-async function generateReply(body) {
+async function generateReply(snippet) {
     const response = await openai.completions.create({
       model: "gpt-3.5-turbo-instruct",
-      prompt: `Reply to this email:\n\n${body}`,
-      maxTokens: 150,
+      prompt: `\n\n"${snippet}"`,
     });
-    return response.choices[0].text.trim();
-  }
+    return response.choices[0].text;
+}
 
 async function processMessage(auth, message) {
   try {
     const headers = message.payload.headers;
     const subject = headers.find(header => header.name === 'Subject').value;
     const from = headers.find(header => header.name === 'From').value;
+    const messageId = headers.find(header => header.name === 'Message-ID').value;
 
-    let body = '';
-    if (message.payload.body.size > 0) {
-      body = Buffer.from(message.payload.body.data, 'base64').toString('utf8');
-    }
+    const snippet = message.snippet;
 
-    const replyBody = await generateReply(body);
-    const rawMessage = createAutoReply(from, subject, replyBody);
+    const replyBody = await generateReply(snippet);
+    const rawMessage = createAutoReply(from, subject, replyBody, messageId);
     await sendMessage(auth, rawMessage);
     console.log(`Replied to email from ${from}`);
   } catch (error) {
